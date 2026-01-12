@@ -5,7 +5,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { Sparkles, MessageSquare } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
 
 /**
  * WelcomeScreen Component
@@ -19,47 +19,12 @@ export default function WelcomeScreen({ onSend, suggestions = [] }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-6 overflow-y-auto overflow-x-hidden min-h-0 chatbot-scrollbar">
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-        className="mb-6"
-      >
-        <div className="relative">
-          <motion.div
-            className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center shadow-lg"
-            animate={{ 
-              rotate: [0, 5, -5, 0],
-            }}
-            transition={{ 
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Sparkles className="w-10 h-10 text-white" />
-          </motion.div>
-          <motion.div
-            className="absolute inset-0 bg-primary rounded-full opacity-20"
-            animate={{ 
-              scale: [1, 1.3, 1],
-              opacity: [0.2, 0, 0.2]
-            }}
-            transition={{ 
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeOut"
-            }}
-          />
-        </div>
-      </motion.div>
-
+    <div className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-6 overflow-y-auto overflow-x-hidden min-h-0 chatbot-scrollbar">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="text-center mb-8"
+        transition={{ delay: 0.1 }}
+        className="text-center mb-8 mt-4"
       >
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
           Welcome to Lab Assistant

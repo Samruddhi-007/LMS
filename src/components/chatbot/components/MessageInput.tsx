@@ -97,7 +97,7 @@ export default function MessageInput({
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
-      <div className="flex items-end gap-2">
+      <div className="flex items-center gap-2">
         {/* Textarea */}
         <div className="flex-1 relative">
           <textarea
@@ -117,7 +117,7 @@ export default function MessageInput({
         <div className="relative" ref={emojiMenuRef}>
           <motion.button
             onClick={() => setShowEmojiMenu(!showEmojiMenu)}
-            className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
+            className={`p-2.5 rounded-lg transition-colors flex-shrink-0 ${
               showEmojiMenu
                 ? 'text-primary bg-primary/10 dark:bg-primary/20'
                 : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -126,7 +126,7 @@ export default function MessageInput({
             whileTap={{ scale: 0.9 }}
             title="Add emoji"
           >
-            <Smile className="w-5 h-5" />
+            <Smile className="w-6 h-6" />
           </motion.button>
 
           {/* Emoji Menu */}
@@ -164,48 +164,21 @@ export default function MessageInput({
         </div>
 
         {/* Send button */}
-        <AnimatePresence mode="wait">
-          {hasMessage ? (
-            <motion.button
-              key="send"
-              onClick={handleSend}
-              disabled={disabled}
-              className="p-2.5 md:p-3 bg-gradient-to-br from-primary to-primary-dark text-white rounded-xl md:rounded-2xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0 shadow-md"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 180 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              aria-label="Send message"
-            >
-              <Send className="w-5 h-5" />
-            </motion.button>
-          ) : (
-            <motion.div
-              key="placeholder"
-              className="w-10 h-10 md:w-12 md:h-12"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            />
-          )}
-        </AnimatePresence>
+        <motion.button
+          onClick={handleSend}
+          disabled={disabled || !hasMessage}
+          className={`p-2.5 md:p-3 rounded-xl md:rounded-2xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0 shadow-md ${
+            hasMessage
+              ? 'bg-gradient-to-br from-primary to-primary-dark text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+          }`}
+          whileHover={hasMessage ? { scale: 1.05, rotate: 5 } : {}}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Send message"
+        >
+          <Send className="w-5 h-5" />
+        </motion.button>
       </div>
-      
-      {/* Helper text */}
-      <AnimatePresence>
-        {!hasMessage && (
-          <motion.p
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="text-xs text-gray-400 dark:text-gray-500 mt-2 px-1"
-          >
-            Press Enter to send, Shift+Enter for new line
-          </motion.p>
-        )}
-      </AnimatePresence>
     </motion.div>
   )
 }

@@ -29,9 +29,21 @@ const LabManagementNCRs = lazy(() => import('./pages/lab/management/NCRs'))
 const LabManagementCertifications = lazy(() => import('./pages/lab/management/Certifications'))
 const ProjectDetail = lazy(() => import('./pages/lab/management/ProjectDetail'))
 const PlaceholderPage = lazy(() => import('./pages/lab/management/PlaceholderPage'))
-const LabManagementAIIntegration = lazy(() => import('./pages/lab/management/AIIntegrationStrategy'))
 const LabManagementCalendar = lazy(() => import('./pages/lab/management/Calendar'))
 const LabManagementRecommendations = lazy(() => import('./pages/lab/management/LabRecommendations'))
+const Inventory = lazy(() => import('./pages/lab/management/Inventory'))
+const InventoryInstruments = lazy(() => import('./pages/lab/management/InventoryInstruments'))
+const InventoryCalibration = lazy(() => import('./pages/lab/management/InventoryCalibration'))
+const InventoryConsumables = lazy(() => import('./pages/lab/management/InventoryConsumables'))
+const InventoryTransactions = lazy(() => import('./pages/lab/management/InventoryTransactions'))
+const InventoryReports = lazy(() => import('./pages/lab/management/InventoryReports'))
+const QualityAssurance = lazy(() => import('./pages/lab/management/QualityAssurance'))
+const QASOPManagement = lazy(() => import('./pages/lab/management/QASOPManagement'))
+const QAQCChecks = lazy(() => import('./pages/lab/management/QAQCChecks'))
+const QAAuditCompliance = lazy(() => import('./pages/lab/management/QAAuditCompliance'))
+const QANCCAPA = lazy(() => import('./pages/lab/management/QANCCAPA'))
+const QADocumentControl = lazy(() => import('./pages/lab/management/QADocumentControl'))
+const QAAReports = lazy(() => import('./pages/lab/management/QAAReports'))
 
 // Loading component
 const PageLoader = () => (
@@ -101,7 +113,21 @@ function AnimatedRoutes() {
           <Route path="certifications" element={<Suspense fallback={<PageLoader />}><LabManagementCertifications /></Suspense>} />
           <Route path="calendar" element={<Suspense fallback={<PageLoader />}><LabManagementCalendar /></Suspense>} />
           <Route path="lab-recommendations" element={<Suspense fallback={<PageLoader />}><LabManagementRecommendations /></Suspense>} />
-          <Route path="ai-integration" element={<Suspense fallback={<PageLoader />}><LabManagementAIIntegration /></Suspense>} />
+          
+          {/* Inventory Management */}
+          <Route path="inventory" element={<Suspense fallback={<PageLoader />}><Inventory /></Suspense>} />
+          <Route path="inventory/instruments" element={<Suspense fallback={<PageLoader />}><InventoryInstruments /></Suspense>} />
+          <Route path="inventory/calibration" element={<Suspense fallback={<PageLoader />}><InventoryCalibration /></Suspense>} />
+          <Route path="inventory/consumables" element={<Suspense fallback={<PageLoader />}><InventoryConsumables /></Suspense>} />
+          <Route path="inventory/transactions" element={<Suspense fallback={<PageLoader />}><InventoryTransactions /></Suspense>} />
+          <Route path="inventory/reports" element={<Suspense fallback={<PageLoader />}><InventoryReports /></Suspense>} />
+          <Route path="qa" element={<Suspense fallback={<PageLoader />}><QualityAssurance /></Suspense>} />
+          <Route path="qa/sop" element={<Suspense fallback={<PageLoader />}><QASOPManagement /></Suspense>} />
+          <Route path="qa/qc" element={<Suspense fallback={<PageLoader />}><QAQCChecks /></Suspense>} />
+          <Route path="qa/audit" element={<Suspense fallback={<PageLoader />}><QAAuditCompliance /></Suspense>} />
+          <Route path="qa/nc-capa" element={<Suspense fallback={<PageLoader />}><QANCCAPA /></Suspense>} />
+          <Route path="qa/documents" element={<Suspense fallback={<PageLoader />}><QADocumentControl /></Suspense>} />
+          <Route path="qa/reports" element={<Suspense fallback={<PageLoader />}><QAAReports /></Suspense>} />
         </Route>
         
         {/* Catch all - redirect to dashboard */}

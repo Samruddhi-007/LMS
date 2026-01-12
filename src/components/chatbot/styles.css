@@ -65,30 +65,24 @@
   background: rgba(75, 85, 99, 0.3);
 }
 
-/* Subtle scrollbar for message input textarea */
+/* Hidden scrollbar for message input textarea - invisible but scrollable */
+.message-input-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
 .message-input-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
 }
 
 .message-input-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  display: none;
 }
 
 .message-input-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 2px;
-}
-
-.message-input-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
-}
-
-.dark .message-input-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(75, 85, 99, 0.3);
-}
-
-.dark .message-input-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(75, 85, 99, 0.5);
+  display: none;
 }
 
 /* Emoji menu scrollbar */

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Plus, Search, Play, CheckCircle, Clock, User } from 'lucide-react'
+import { Plus, Search, Play, CheckCircle, Clock, User, ExternalLink } from 'lucide-react'
 import { testExecutionsService } from '../../../services/labManagementApi'
 import { testPlansService } from '../../../services/labManagementApi'
 import toast from 'react-hot-toast'
@@ -68,18 +68,18 @@ function TestExecutions() {
 
   const getStatusColor = (status) => {
     const colors = {
-      Scheduled: 'info',
-      InProgress: 'warning',
-      Completed: 'success',
-      Failed: 'danger'
+      completed: 'success',
+      passed: 'success',
+      'meet compliance': 'success',
+      'doesn\'t meet compliance': 'danger'
     }
-    return colors[status] || 'default'
+    return colors[status?.toLowerCase()] || 'default'
   }
 
   const filteredExecutions = executions.filter(exec => {
     const matchesSearch = exec.id?.toString().includes(searchTerm.toLowerCase())
     const matchesPlan = selectedPlan === 'all' || exec.testPlanId?.toString() === selectedPlan
-    const matchesStatus = selectedStatus === 'all' || exec.status === selectedStatus
+    const matchesStatus = selectedStatus === 'all' || exec.status?.toLowerCase() === selectedStatus.toLowerCase()
     // Also filter by testPlanId from URL if present
     const matchesUrlPlan = !testPlanId || exec.testPlanId?.toString() === testPlanId
     return matchesSearch && matchesPlan && matchesStatus && matchesUrlPlan
@@ -148,10 +148,10 @@ function TestExecutions() {
             className="px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="all">All Statuses</option>
-            <option value="Scheduled">Scheduled</option>
-            <option value="InProgress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Failed">Failed</option>
+            <option value="completed">Completed</option>
+            <option value="passed">Passed</option>
+            <option value="meet compliance">Meet Compliance</option>
+            <option value="doesn't meet compliance">Doesn't Meet Compliance</option>
           </select>
         </div>
       </Card>
@@ -222,14 +222,14 @@ function TestExecutions() {
                     </div>
                   )}
                   
-                  {execution.status === 'Completed' && (
+                  {(execution.status?.toLowerCase() === 'completed' || execution.status?.toLowerCase() === 'passed' || execution.status?.toLowerCase() === 'meet compliance') && (
                     <div className="flex items-center text-sm text-green-600 mt-2">
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Completed
+                      {execution.status}
                     </div>
                   )}
                   
-                  {execution.status === 'Completed' && (
+                  {(execution.status?.toLowerCase() === 'completed' || execution.status?.toLowerCase() === 'passed' || execution.status?.toLowerCase() === 'meet compliance' || execution.status?.toLowerCase() === 'doesn\'t meet compliance') && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
                       <button
                         onClick={(e) => {

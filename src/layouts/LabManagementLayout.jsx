@@ -28,7 +28,6 @@ import {
   Info,
   Building2,
   Target,
-  Sparkles,
   Calendar,
   TrendingUp
 } from 'lucide-react'
@@ -55,7 +54,8 @@ const navigation = [
   { name: 'Certifications', href: '/lab/management/certifications', icon: Shield },
   { name: 'Calendar', href: '/lab/management/calendar', icon: Calendar },
   { name: 'Lab Recommendations', href: '/lab/management/lab-recommendations', icon: TrendingUp },
-  { name: 'AI Integration', href: '/lab/management/ai-integration', icon: Sparkles },
+  { name: 'Inventory Management', href: '/lab/management/inventory', icon: Package },
+  { name: 'Quality Assurance', href: '/lab/management/qa', icon: Shield },
 ]
 
 function LabManagementLayout() {
