@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Building2, 
-  MapPin, 
-  Users2, 
-  Briefcase, 
-  Clock, 
+import {
+  Building2,
+  MapPin,
+  Users2,
+  Briefcase,
+  Clock,
   FileText,
   Upload,
   X,
@@ -27,6 +27,8 @@ import Input from '../../../components/labManagement/Input'
 import Card from '../../../components/labManagement/Card'
 import toast from 'react-hot-toast'
 import { useLabData } from '../../../contexts/LabDataContext'
+import { organizationService } from '../../../services/organizationService'
+import { saveOrganizationStep, uploadFile } from '../../../services/organizationIntegration'
 
 const steps = [
   { id: 1, name: 'Laboratory Details', icon: Building2 },
@@ -100,6 +102,8 @@ const waterSourceOptions = [
 export default function OrganizationDetails() {
   const { organizationData, updateOrganizationData } = useLabData()
   const [currentStep, setCurrentStep] = useState(1)
+  const [organizationId, setOrganizationId] = useState(localStorage.getItem('organizationId') || null)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState(organizationData || {
     // Laboratory Details
     labName: '',
@@ -114,7 +118,7 @@ export default function OrganizationDetails() {
     labProofOfAddressOther: '',
     labDocumentId: '',
     labAddressProofDocument: null,
-    
+
     // Registered Office
     sameAsLabAddress: false,
     registeredAddress: '',
@@ -126,7 +130,7 @@ export default function OrganizationDetails() {
     registeredMobile: '',
     registeredTelephone: '',
     registeredFax: '',
-    
+
     // Top Management Details
     topManagement: [{
       id: 1,
@@ -137,7 +141,7 @@ export default function OrganizationDetails() {
       fax: ''
     }],
     topManagementDocument: null,
-    
+
     // Parent Organization
     sameAsLaboratory: false,
     parentName: '',
@@ -147,7 +151,7 @@ export default function OrganizationDetails() {
     parentDistrict: '',
     parentCity: '',
     parentPinCode: '',
-    
+
     // Bank Details
     accountHolderName: '',
     accountNumber: '',
@@ -155,11 +159,11 @@ export default function OrganizationDetails() {
     branchName: '',
     gstNumber: '',
     cancelledCheque: null,
-    
+
     // Working Days & Hours
     workingDays: [],
     shiftTimings: [{ from: '', to: '' }],
-    
+
     // Type of Organization
     organizationType: 'Select',
     organizationTypeOther: '',
@@ -167,25 +171,25 @@ export default function OrganizationDetails() {
     proofOfLegalIdentityOther: '',
     legalIdentityDocumentId: '',
     legalIdentityDocument: null,
-    
+
     // Statutory Compliance
     complianceDocuments: [],
-    
+
     // Undertakings & Policies
     impartialityDocument: null,
     termsConditionsDocument: null,
     codeOfEthicsDocument: null,
     testingChargesPolicyDocument: null,
-    
+
     // Power, Electric and Water Supply
     adequacySanctionedLoad: '',
     availabilityUninterruptedPower: false,
     stabilityOfSupply: false,
     waterSource: 'Select',
-    
+
     // Accreditation Documents
     accreditationDocuments: [],
-    
+
     // Other Details
     otherLabDetails: '',
     otherDetailsDocument: null,
@@ -193,20 +197,20 @@ export default function OrganizationDetails() {
     organizationChart: null,
     gpsLatitude: '',
     gpsLongitude: '',
-    
+
     // Quality Manual / Document
     qualityManualTitle: '',
     qualityManualIssueNumber: '',
     qualityManualIssueDate: '',
     qualityManualAmendments: '',
     qualityManualDocument: null,
-    
+
     // Standard Operating Procedures
     sopList: [],
-    
+
     // Quality Formats
     qualityFormats: [],
-    
+
     // Quality Procedures
     qualityProcedures: []
   })
@@ -215,26 +219,37 @@ export default function OrganizationDetails() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleFileUpload = (field, file) => {
-    if (file) {
-      // Validate file size (2MB for PDFs, 1MB for images)
-      const maxSize = field === 'labLogo' ? 1 * 1024 * 1024 : 2 * 1024 * 1024
-      if (file.size > maxSize) {
-        toast.error(`File size should not exceed ${field === 'labLogo' ? '1MB' : '2MB'}`)
-        return
-      }
-      
-      // Validate file type
-      const allowedTypes = field === 'labLogo' 
-        ? ['image/jpeg', 'image/jpg', 'image/png']
-        : ['application/pdf']
-      
-      if (!allowedTypes.includes(file.type)) {
-        toast.error(`Please upload ${field === 'labLogo' ? 'JPG/PNG' : 'PDF'} files only`)
-        return
-      }
-      
-      handleInputChange(field, file)
+  const handleFileUpload = async (field, file) => {
+    if (!file) return
+
+    // Validate file size (2MB for PDFs, 1MB for images)
+    const maxSize = field === 'labLogo' ? 1 * 1024 * 1024 : 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast.error(`File size should not exceed ${field === 'labLogo' ? '1MB' : '2MB'}`)
+      return
+    }
+
+    // Validate file type
+    const allowedTypes = field === 'labLogo'
+      ? ['image/jpeg', 'image/jpg', 'image/png']
+      : ['application/pdf']
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(`Please upload ${field === 'labLogo' ? 'JPG/PNG' : 'PDF'} files only`)
+      return
+    }
+
+    // Upload file to backend
+    try {
+      setLoading(true)
+      const fileUrl = await uploadFile(file, field)
+      handleInputChange(field, fileUrl)
+      toast.success('File uploaded successfully!')
+    } catch (error) {
+      toast.error('File upload failed: ' + error.message)
+      console.error('File upload error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -468,8 +483,8 @@ export default function OrganizationDetails() {
   const validateStep = (step) => {
     switch (step) {
       case 1:
-        if (!formData.labName || !formData.labAddress || !formData.labState || 
-            !formData.labDistrict || !formData.labCity || !formData.labPinCode) {
+        if (!formData.labName || !formData.labAddress || !formData.labState ||
+          !formData.labDistrict || !formData.labCity || !formData.labPinCode) {
           toast.error('Please fill in all required laboratory details')
           return false
         }
@@ -484,9 +499,9 @@ export default function OrganizationDetails() {
         break
       case 2:
         if (!formData.sameAsLabAddress) {
-          if (!formData.registeredAddress || !formData.registeredState || 
-              !formData.registeredDistrict || !formData.registeredCity || 
-              !formData.registeredPinCode || !formData.registeredMobile) {
+          if (!formData.registeredAddress || !formData.registeredState ||
+            !formData.registeredDistrict || !formData.registeredCity ||
+            !formData.registeredPinCode || !formData.registeredMobile) {
             toast.error('Please fill in all required registered office details')
             return false
           }
@@ -519,8 +534,8 @@ export default function OrganizationDetails() {
         }
         break
       case 6:
-        if (!formData.impartialityDocument || !formData.termsConditionsDocument || 
-            !formData.codeOfEthicsDocument || !formData.testingChargesPolicyDocument) {
+        if (!formData.impartialityDocument || !formData.termsConditionsDocument ||
+          !formData.codeOfEthicsDocument || !formData.testingChargesPolicyDocument) {
           toast.error('Please upload all required policy documents')
           return false
         }
@@ -546,8 +561,8 @@ export default function OrganizationDetails() {
         }
         break
       case 9:
-        if (!formData.qualityManualTitle || !formData.qualityManualIssueNumber || 
-            !formData.qualityManualIssueDate || !formData.qualityManualAmendments) {
+        if (!formData.qualityManualTitle || !formData.qualityManualIssueNumber ||
+          !formData.qualityManualIssueDate || !formData.qualityManualAmendments) {
           toast.error('Please fill in all quality manual details')
           return false
         }
@@ -572,25 +587,77 @@ export default function OrganizationDetails() {
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
-  const handleSave = () => {
-    if (validateStep(currentStep)) {
-      updateOrganizationData(formData)
-      toast.success('Organization details saved successfully!')
+  const handleSave = async () => {
+    if (!validateStep(currentStep)) return
+
+    try {
+      setLoading(true)
+
+      // Create organization if it doesn't exist (Step 1)
+      if (!organizationId && currentStep === 1) {
+        const newOrg = await organizationService.createOrganization({
+          lab_name: formData.labName,
+          lab_address: formData.labAddress,
+          lab_state: formData.labState,
+          lab_district: formData.labDistrict,
+          lab_city: formData.labCity,
+          lab_pin_code: formData.labPinCode,
+        })
+
+        setOrganizationId(newOrg.id)
+        localStorage.setItem('organizationId', newOrg.id)
+        toast.success('Organization created successfully!')
+      } else if (organizationId) {
+        // Update existing organization
+        await saveOrganizationStep(organizationId, currentStep, formData)
+        updateOrganizationData(formData)
+        toast.success('Organization details saved successfully!')
+      } else {
+        toast.error('Please complete Step 1 first')
+        return
+      }
+
+      // Move to next step
+      if (currentStep < steps.length) {
+        setCurrentStep(prev => prev + 1)
+      }
+    } catch (error) {
+      toast.error('Save failed: ' + error.message)
+      console.error('Save error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(currentStep)) return
-    
-    // Validate all required fields across all steps
-    if (!formData.labName || !formData.labAddress) {
-      toast.error('Please complete all required fields')
-      setCurrentStep(1)
+
+    if (!organizationId) {
+      toast.error('Please save your data first')
       return
     }
-    
-    updateOrganizationData(formData)
-    toast.success('Organization details submitted successfully!')
+
+    try {
+      setLoading(true)
+
+      // Get checklist to verify completion
+      const checklist = await organizationService.getChecklist(organizationId)
+
+      if (!checklist.is_ready_for_submission) {
+        toast.error('Please complete all required fields')
+        return
+      }
+
+      // Submit organization
+      await organizationService.submitOrganization(organizationId)
+      updateOrganizationData(formData)
+      toast.success('Organization details submitted successfully!')
+    } catch (error) {
+      toast.error('Submission failed: ' + error.message)
+      console.error('Submit error:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -612,13 +679,12 @@ export default function OrganizationDetails() {
             <div key={step.id} className="flex items-center flex-1">
               <div className="flex flex-col items-center flex-1">
                 <div
-                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all ${
-                    currentStep === step.id
-                      ? 'bg-primary border-primary text-white'
-                      : currentStep > step.id
+                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all ${currentStep === step.id
+                    ? 'bg-primary border-primary text-white'
+                    : currentStep > step.id
                       ? 'bg-green-500 border-green-500 text-white'
                       : 'bg-white border-gray-300 text-gray-500'
-                  }`}
+                    }`}
                 >
                   {currentStep > step.id ? (
                     <Check className="w-6 h-6" />
@@ -627,22 +693,20 @@ export default function OrganizationDetails() {
                   )}
                 </div>
                 <p
-                  className={`text-xs mt-2 text-center font-medium ${
-                    currentStep === step.id
-                      ? 'text-primary'
-                      : currentStep > step.id
+                  className={`text-xs mt-2 text-center font-medium ${currentStep === step.id
+                    ? 'text-primary'
+                    : currentStep > step.id
                       ? 'text-green-600'
                       : 'text-gray-500'
-                  }`}
+                    }`}
                 >
                   {step.name}
                 </p>
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`h-0.5 flex-1 mx-2 mb-6 ${
-                    currentStep > step.id ? 'bg-green-500' : 'bg-gray-300'
-                  }`}
+                  className={`h-0.5 flex-1 mx-2 mb-6 ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -1288,11 +1352,10 @@ export default function OrganizationDetails() {
                       {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                         <label
                           key={day}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
-                            formData.workingDays.includes(day)
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-gray-300 hover:border-gray-400'
-                          }`}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${formData.workingDays.includes(day)
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-gray-300 hover:border-gray-400'
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -2668,9 +2731,8 @@ export default function OrganizationDetails() {
                               {step.name} {!isCompleted && <span className="text-red-500">*</span>}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                isCompleted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                              }`}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isCompleted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                }`}>
                                 {isCompleted ? 'Completed' : 'Pending'}
                               </span>
                             </td>
@@ -2736,6 +2798,16 @@ export default function OrganizationDetails() {
           </Card>
         </motion.div>
       </AnimatePresence>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-gray-700 font-medium">Processing...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

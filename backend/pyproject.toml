@@ -1,0 +1,3 @@
+[tool.uvicorn]
+reload-dirs = ["app"]
+reload-excludes = [".venv/**", "*.pyc", "__pycache__/**", "*.db"]
